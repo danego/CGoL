@@ -4,11 +4,13 @@
 //            but html board is easier to see turns
 //         - fyi, I used a single array to store the board rather than a nested array. Simplifies internal calcs 
 
+//         - passing in many variables ... should i write functions lexically w/in one another??
+
 /*
 NOTES:
-- what about making board var and board.length^1/2 global variables ??? would simplify func calls
-
 - would be good to wrap all board functionality in mini-framework
+    - wrap JS boardHTML separately & place makeMark, clearMarks, etc on prototype. 
+    - then set up html/DOM code accessing the boardHTML thru those channels/methods (make button events easier)
 
 - html board view
      - how to keep constant looking when X's pop up (how to insert html insturctions w/o it just printing as a string)
@@ -24,33 +26,52 @@ NOTES:
 //seems to fill the first-level array w/ references to the same array lol:
 //const board = new Array(5).fill(new Array(5).fill("O"));
 
-var elementNamesArray;
+
+var boardHTML_lineByLineRepresentation;
+
 var boardHTML;
 
+// is length of one side (ie square root of boardHTML array length)
+// boardSize (board length) is dependent on a square board/grid
+var boardHTMLSize;
+
+//when html button is pressed makeTurn func is called on boardHTML
 document.getElementById("makeTurn").onclick = function() {
-    boardHTML = makeTurn(boardHTML);
-    displayB_HTML();
+
+    //boardHTML = makeTurn(boardHTML);
+    makeTurn();
+    displayBoardHTML();
 }
 
-//creates board - Square only for now. Default b size is 5.
-function createBoard(size = 5, htmlEnable) {
-    var arrayLine = new Array(size*size);
-    arrayLine.fill("-");
+//creates board - Square only for now. Default board size is 5.
+function createBoard(boardSize = 5, htmlEnable) {
 
+    var board_singleArray = new Array(boardSize * boardSize);
+    board_singleArray.fill("-");
+
+    //creates HTML representation of board using p element for each row in board
     if(htmlEnable) {
-        var lineString = "";
-        for(var i = 0; i<size; i++) {
-            lineString += " -";    //would have to add html <pre> or something ... prob container wb best
+
+        var lineRepresentation = "";
+        for(var i = 0; i < boardSize; i++) {
+
+            lineRepresentation += " -";    //would have to add html <pre> or something ... prob container wb best
         }
-        elementNamesArray = new Array(size);
-        for(var i = 0; i<size; i++) {
-            elementNamesArray[i] = document.createElement('p');
-            elementNamesArray[i].textContent = lineString;
-            document.body.appendChild(elementNamesArray[i]);
+
+        boardHTML = board_singleArray;
+        boardHTMLSize = Math.sqrt(boardHTML.length);
+        //add HTML <p> board
+        boardHTML_lineByLineRepresentation = new Array(boardSize);
+        for(var i = 0; i<boardSize; i++) {
+
+            boardHTML_lineByLineRepresentation[i] = document.createElement('p');
+            boardHTML_lineByLineRepresentation[i].textContent = lineRepresentation;
+            document.body.appendChild(boardHTML_lineByLineRepresentation[i]);
         }
     }
-    return arrayLine;
+    return board_singleArray;
 }
+
 
 
 //makeMark() - changes cell from dead to alive (for user to input starting positions)
@@ -62,238 +83,267 @@ function createBoard(size = 5, htmlEnable) {
 /*  0,0  0,1  0,2
     1,0  1,1  1,2
     2,0  2,1, 2,2   */
-function makeMark(board, index, indexY) {
+
+function makeMark(index_singleLine_X, index_Y) {
 
     //marks board based on snake chart/one-line numbers 
-    if(indexY === undefined) board[index] = "X";
+    if(index_Y === undefined) boardHTML[index_singleLine_X] = "X";
 
     //XY passed in - marks board based on nested array coords (converts to snake/one-line)
     else {
-        const bl = Math.sqrt(board.length);
+
         //"mark = board_length * x coord + y coord"
-        let markIdx = bl*index + indexY;
-        board[markIdx] = "X";
+        let singleLineIndex = boardHTMLSize*index_singleLine_X + index_Y; 
+        boardHTML[singleLineIndex] = "X";
     }
 }
 
 //set board back to all dead cells
-function clearBoard(board) {
+function clearBoard() {
 
     //I guess could use map() but then have to create new array (doesn't alter og array values otherwise)
-    for(var i =0; i<board.length; i++) {
-        board[i] = '-';
-    }
+    for (var i = 0; i < boardHTML.length; i++)  boardHTML[i] = '-';
+
 }
 
 //displays board - converts internal single line/array structure into grid/board
-function displayB(arrayLine) {
+function displayBoardConsole(board_singleArray) {
 
-    const bl = Math.sqrt(arrayLine.length);
+    const boardSize = Math.sqrt(board_singleArray.length);
 
-    var aLindex = 0;
-    for(var i =0; i<bl; i++) {
-        var line = "";
-        for(var j=0; j<bl; j++) {
-            line = line + ' ' + arrayLine[aLindex];
-            aLindex ++;
+    var singleArrayIndex = 0;
+
+    for(var i = 0; i < boardSize; i++) {
+
+        var consoleLineRepresentation = "";
+        for(var j = 0; j < boardSize; j++) {
+
+            consoleLineRepresentation = consoleLineRepresentation + ' ' + board_singleArray[singleArrayIndex];
+            singleArrayIndex ++;
         }
-        console.log(line);
+        console.log(consoleLineRepresentation);
     }
     //helps break up the boards:
     console.log('00000000000000');
 }
 
-function displayB_HTML() {
-    const bl = Math.sqrt(boardHTML.length);
 
-    var aLindex = 0;
-    var elemIndex = 0;
-    for(var i =0; i<bl; i++) {
-        var line = "";
-        for(var j=0; j<bl; j++) {
-            line = line + ' ' + boardHTML[aLindex];
-            aLindex ++;
+function displayBoardHTML() {
+
+    var singleArrayIndex = 0;
+
+    for (var i = 0; i < boardHTMLSize; i++) {
+
+        var htmlLineText = "";
+        for(var j=0; j < boardHTMLSize; j++) {
+
+            htmlLineText = htmlLineText + ' ' + boardHTML[singleArrayIndex];
+            singleArrayIndex ++;
         }
-        elementNamesArray[i].textContent = line;
-        elemIndex ++;
+
+        //actually changes HTML element's text
+        boardHTML_lineByLineRepresentation[i].textContent = htmlLineText;
     }
 }
 
 
-//advances state of board to next turn/tick (see CGoL's rules for cell life/death)
-//returns new board to be assigned to original (could be improved upon for performance sake)
-function makeTurn(arrayLine) { 
 
-    //check for hits (X's) and whether their next condition (live or die)
-    // - checking each square for now ... brute force
-    // - bl (board length) is dependent on a square board/grid
-    const bl = Math.sqrt(arrayLine.length);
+//makeTurn - advances state of board to next turn/tick (see CGoL's rules for cell life/death)
 
-    //create new array for resulting board:
-    const arrayLineResult = new Array(arrayLine.length).fill("-");
-
-
-    for(var i =0; i<arrayLine.length; i++) {
-
-        //number of neighbors to determine life/death
+//lets say it takes a cell index 
+//sets value for if R/L edge, or interior
+//calls countNeighsForLoops 
+//return # neighs alive (evaluate in main makeTurn)
+//number of neighbors to determine life/death
         //each cell has up to 8 neighbors. The following code tests them in three parts: 
         //1. the row above the cell, 2. the row of the cell (only 2 neighbors), 3. and the row below
-        var totNeighs = 0;
+function makeTurn_setForLoopNums(cellIndex) {
 
-        //But first it must determine if current cell is on edge of board to adjust its neighbors
-        //vars for for_loops, both for neighbors in above and below row
-        var forStartAbove, 
-            forStopAbove,
-            forStartBelow,
-            forStopBelow;
+    boardHTML[cellIndex];
+    let totNeighborsAlive = 0;
 
-        //Edge Test & Prep: Set for_loop variables & count same-row neighbors
-        //Left-Edge Case
-        if (i % bl === 0) {
-            forStartAbove = i - bl;
-            forStopAbove = forStartAbove + 1;
+    //But first it must determine if current cell is on edge of board to adjust its neighbors
+    //vars for for_loops, both for neighbors in above and below row
+    let forLoop_StartAboveRow, 
+        forLoop_StopAboveRow,
+        forLoop_StartBelowRow,
+        forLoop_StopBelowRow;
 
-            forStartBelow = i + bl;
-            forStopBelow = forStartBelow + 1;
+    //Edge Test & Prep: Set for_loop variables & count same-row neighbors
+    //Left-Edge Case
+    if (cellIndex % boardHTMLSize === 0) {
 
-            if (arrayLine[i+1] === 'X') totNeighs ++;  //R neigh only
-        }
-        //Right-Edge Case
-        else if((i+1) % bl === 0) {
-            forStartAbove = i - bl - 1;
-            forStopAbove = forStartAbove + 1;
-            
-            forStartBelow = i + bl -1;
-            forStopBelow = forStartBelow + 1;
+        forLoop_StartAboveRow = cellIndex - boardHTMLSize;
+        forLoop_StopAboveRow = forLoop_StartAboveRow + 1;
 
-            if (arrayLine[i-1] === 'X') totNeighs++;  //L neigh only
-        }
-        //Interior Case (all non-edge cells)
-        else {
-            forStartAbove = i - bl - 1;
-            forStopAbove = forStartAbove + 2;
-            
-            forStartBelow = i + bl - 1;
-            forStopBelow = forStartBelow + 2;
+        forLoop_StartBelowRow = cellIndex + boardHTMLSize;
+        forLoop_StopBelowRow = forLoop_StartBelowRow + 1;
 
-            if (arrayLine[i-1] === 'X') totNeighs++;
-            if (arrayLine[i+1] === 'X') totNeighs ++;  //both neighs
-        }
+        if (boardHTML[cellIndex + 1] === 'X') totNeighborsAlive++;  //R neigh only
+    }
 
-        //Now run for loops to count neighbors in above & below rows:
-        //sets range to row above 
-        for(var j = forStartAbove; j <= forStopAbove; j++) {
-            if (arrayLine[j] === 'X') totNeighs ++;
-        }
-        //sets range to row below
-        for(var j = forStartBelow; j <= forStopBelow; j++) {
-            if (arrayLine[j] === 'X') totNeighs ++;
-        }
+    //Right-Edge Case
+    else if ((cellIndex + 1) % boardHTMLSize === 0) {
+
+        forLoop_StartAboveRow = cellIndex - boardHTMLSize - 1;
+        forLoop_StopAboveRow = forLoop_StartAboveRow + 1;
+        
+        forLoop_StartBelowRow = cellIndex + boardHTMLSize -1;
+        forLoop_StopBelowRow = forLoop_StartBelowRow + 1;
+
+        if (boardHTML[cellIndex - 1] === 'X') totNeighborsAlive++;  //L neigh only
+    }
+
+    //Interior Case (all non-edge cells)
+    else {
+
+        forLoop_StartAboveRow = cellIndex - boardHTMLSize - 1;
+        forLoop_StopAboveRow = forLoop_StartAboveRow + 2;
+        
+        forLoop_StartBelowRow = cellIndex + boardHTMLSize - 1;
+        forLoop_StopBelowRow = forLoop_StartBelowRow + 2;
+
+        if (boardHTML[cellIndex - 1] === 'X') totNeighborsAlive++;
+        if (boardHTML[cellIndex + 1] === 'X') totNeighborsAlive++;  //both neighs
+    }
+
+    return makeTurn_countTotNeighbors(forLoop_StartAboveRow, forLoop_StopAboveRow, forLoop_StartBelowRow, forLoop_StopBelowRow, totNeighborsAlive);
+}
+
+//should return final number of neighs alive
+function makeTurn_countTotNeighbors(forLoop_StartAboveRow, forLoop_StopAboveRow, forLoop_StartBelowRow, forLoop_StopBelowRow, totNeighborsAlive) { 
+    //Now run for loops to count neighbors in above & below rows:
+    //sets range to row above 
+    for (var j = forLoop_StartAboveRow; j <= forLoop_StopAboveRow; j++) {
+
+        if (boardHTML[j] === 'X') totNeighborsAlive ++;
+    }
+
+    //sets range to row below
+    for (var j = forLoop_StartBelowRow; j <= forLoop_StopBelowRow; j++) {
+
+        if (boardHTML[j] === 'X') totNeighborsAlive ++;
+    }
+
+    return totNeighborsAlive;
+}
+
+//check for hits (X's) and whether their next condition (live or die)
+function makeTurn(board_singleArray) { 
+
+    //create new array for resulting board (will replace boardHTML at end):
+    const boardResult_singleArray = new Array(boardHTML.length).fill("-");
+
+    for(var i = 0; i < boardHTML.length; i++) {
+
+        //returns num of neighbors alive (eventually)
+        let totNeighborsAlive = makeTurn_setForLoopNums(i);
 
         //Evaluate neighbor count to determine if cell lives or die:
         //case: if alive already
-        if (arrayLine[i] === 'X') {
-            if (totNeighs < 2 || totNeighs > 3) arrayLineResult[i] = "-";
-            else arrayLineResult[i] = "X";
+        if (boardHTML[i] === 'X') {
+
+            if (totNeighborsAlive < 2 || totNeighborsAlive > 3) boardResult_singleArray[i] = "-";
+            else boardResult_singleArray[i] = "X";
         }
+
         //case: dead cell
         else {
-            if (totNeighs === 3) arrayLineResult[i] = "X";
-            else arrayLineResult[i] = "-";
+
+            if (totNeighborsAlive === 3) boardResult_singleArray[i] = "X";
+            else boardResult_singleArray[i] = "-";
         }
+    }
 
-    } //end of arrayLine for Loop
-
-    //console.log(arrayLine);                    //for testing
-    //console.log(arrayLine.length);
-    //console.log(arrayLineResult);              //for testing 
+    //console.log(board_singleArray);                    //for testing
+    //console.log(board_singleArray.length);
+    //console.log(boardResult_singleArray);              //for testing 
     
-
-    return arrayLineResult;
-    
+    boardHTML = boardResult_singleArray;
 }//end of makeTurn()
 
 
 
 
+/*
 
 //TESTING SECTION:
 //create 5x5 board
 var board = createBoard(5);
-displayB(board);
+displayBoardConsole(board);
 
 //create horizontal line pattern
 makeMark(board, 6);
 makeMark(board, 7);
 makeMark(board, 8);
-displayB(board);
+displayBoardConsole(board);
 
 //make turn. Should be vertical line now
 board = makeTurn(board);
-displayB(board);
+displayBoardConsole(board);
 
 //make turn, back to horizontal
 board = makeTurn(board);
-displayB(board);
+displayBoardConsole(board);
 console.log('end of line switching.');
 
 
 //testing makeMark w/ 2 params (2D array coords)
 //let's add an X below our horizontal line & makeTurn two times
 makeMark(board, 2, 2);
-displayB(board);
+displayBoardConsole(board);
 
 board = makeTurn(board);
-displayB(board);
+displayBoardConsole(board);
 
 board = makeTurn(board);
-displayB(board);
+displayBoardConsole(board);
 
 //clear board
 console.log('clearing ...');
 clearBoard(board);
-displayB(board);
+displayBoardConsole(board);
 
 
 
 //create 3x3 board
 //var board3 = createBoard(3);
-//displayB(board3);
+//displayBoardConsole(board3);
 
 
 //at size board ... 12x12 & 10 cell line pattern
 board12 = createBoard(12);
-displayB(board12);
+displayBoardConsole(board12);
 
 //makeMarks for 10-cell line
 for(var i =37; i<47; i++) {
     makeMark(board12, i);
 }
-displayB(board12);
+displayBoardConsole(board12);
 
 board12 = makeTurn(board12);
-displayB(board12);
+displayBoardConsole(board12);
 
 board12 = makeTurn(board12);
-displayB(board12);
+displayBoardConsole(board12);
 
 board12 = makeTurn(board12);
-displayB(board12);
+displayBoardConsole(board12);
 
-
+*/
 
 //html testing 
-boardHTML = createBoard(5,true); 
+boardHTML = createBoard(5,true);
 
 //make 5-cell vertical line
 //note: turns will be handled through html button
-makeMark(boardHTML, 2);
-makeMark(boardHTML, 7);
-makeMark(boardHTML, 12);
-makeMark(boardHTML, 17);
-makeMark(boardHTML, 22);
+makeMark(2);
+makeMark(7);
+makeMark(12);
+makeMark(17);
+makeMark(22);
 
-displayB_HTML();
+displayBoardHTML();
 
 
 
