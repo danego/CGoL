@@ -13,15 +13,33 @@
       .note {
         text-align: left;
       }
+
+      .random {
+        background-color: pink;
+      }
     </style>
   </head>
+
   <body>
     <h1>Our very own CGoL program</h1>
     
     <p class="note"><em>Note: The HTML board is meant only to allow easier viewing (and turn progession) of the board at this time.</em></p>
-    <p class="note">To set marks or create board size, please do so via the javascript file.</p>
+    <p class="note"></p>To set <em>specific</em> marks or create board size, please do so via the javascript file.</p>
 
-    <div><input id="makeTurn" type="button" value="makeTurn"></div>
+    <div>
+      <input id="makeTurn" type="button" value="makeTurn">
+      <input id="makeRandomMark" type="button" value="Go Random" class="random">
+      <input id="makeRandomMarkAutoTurns" type="button" value="Go Random + Timer" class="random">
     
+      <label for="rando-select">&nbsp Choose how random:</label>
+      <select name="randoNum" id="rando-select" class="random">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+    </div>
+
   </body>
 </html>
