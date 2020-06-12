@@ -1,35 +1,10 @@
-//Conway's Game of Life
-// Sirrele (& Courtney)
-//         - Single Array internals - wait for PR (product review?)
-//         - how to stop auto makeTurn function ??? - Sirrele
-//         - want to add boardSize selector in html but having hiccups
-
-
-/*
-NOTES:
-- optimize makeTurn - consolidate same neighbors and pass as argument (set in for Loops).
-- makeTurn - bc the func is split into 3 there are several heavy handed func calls (many params)
-           - should I place them lexically w/in the main makeTurn function? Is that pointful/less?
-
-- all board functionality in mini-framework comments:
-    - then set up html/DOM code accessing the boardHTML thru those channels/methods (make button events easier)
-    - ** some methods, like clearBoard, makemark, should auto call displayBoard ... or wrap in button event handlers ... ?
-    - learning note: look into this.boardHTML in Cgol.init (was opening up that variable into the regular namespace)
-
-- html board view
-     - how to keep constant looking when X's pop up (how to insert html insturctions w/o it just printing as a string)
-
-- think about implementing HTML makeMark. Could redraw board immediatetly or on delay or w/ makeTurn
-    - maybe a button for each cell
-    - or, better, a grid.
-
-*/
+//Conway's Game of Life (CGoL)
 
 ;(function(global) {
 
   //like jQuery, function constructor is called from within the library so user doesn't have to type 'new'
-  let Cgol = function(boardSize) {
-    return new Cgol.init(boardSize);
+  let CgolBoardInitializer = function(boardSize) {
+    return new CgolBoardInitializer.init(boardSize);
   }
 
   let boardHTML_lineByLineRepresentation,  
@@ -37,16 +12,9 @@ NOTES:
     boardHTMLSize,          //is length of one side (ie square root of boardHTML array length - dependent on square board)
     boardHTMLTotalLength;   //total length of boardHTML single array
 
-  Cgol.prototype = {
-    //makeMark() - changes cell from dead to alive (for user to input starting positions)
-    //if no third argument passed in, will place mark based on internal structure (snake/one-line):
-    /*  0 1 2
-        3 4 5
-        6 7 8   */
-    //if 2 params, will follow JavaScript nested array notation:
-    /*  0,0  0,1  0,2
-        1,0  1,1  1,2
-        2,0  2,1, 2,2   */
+  CgolBoardInitializer.prototype = {
+
+    //changes cell from dead to alive (for user to input starting positions or randomMark funcs)
     makeMark: function(index_singleLine_X, index_Y) {
       //marks board based on snake chart/one-line numbers 
       if(index_Y === undefined) boardHTML[index_singleLine_X] = "X";
@@ -60,8 +28,9 @@ NOTES:
       }
     },
 
+    //create this many random marks
     makeMarkRandom: function(markCount) {
-      //create this many random marks
+
       for (let count = 0; count < markCount; count++) {
 
         const rMarkPostion = Math.floor(Math.random() * boardHTML.length);
@@ -107,89 +76,71 @@ NOTES:
         boardHTML_lineByLineRepresentation[i].textContent = htmlLineText;
       }
     },
-
-    //makeTurn's - advances state of board to next turn/tick - see CGoL's rules for cell life/death below:
-    //number of neighbors to determine life/death
-        //each cell has up to 8 neighbors. The following code tests them in three parts: 
-        //1. the row above the cell, 2. the row of the cell (only 2 neighbors), 3. and the row below
-
-    //makeTurn_setForLoopNums - takes a cell index 
-    //sets value forLoops if cell is R/L edge, or interior
-    //returns & called makeTurn_countTotNeighbors (ie tot neighbors alive)
-    makeTurn_setForLoopNums: function(cellIndex) {
-
-      boardHTML[cellIndex];
-      let totNeighborsAlive = 0;
-
-      //But first it must determine if current cell is on edge of board to adjust its neighbors
-      //vars for for_loops, both for neighbors in above and below row
-      let forLoop_StartAboveRow, 
-        forLoop_StopAboveRow,
-        forLoop_StartBelowRow,
-        forLoop_StopBelowRow;
-
-      //Edge Test & Prep: Set for_loop variables & count same-row neighbors
-      //Left-Edge Case
-      if (cellIndex % boardHTMLSize === 0) {
-
-        forLoop_StartAboveRow = cellIndex - boardHTMLSize;
-        forLoop_StopAboveRow = forLoop_StartAboveRow + 1;
-
-        forLoop_StartBelowRow = cellIndex + boardHTMLSize;
-        forLoop_StopBelowRow = forLoop_StartBelowRow + 1;
-
-        if (boardHTML[cellIndex + 1] === 'X') totNeighborsAlive++;  //R neigh only
-      }
-        
-      //Right-Edge Case
-      else if ((cellIndex + 1) % boardHTMLSize === 0) {
-  
-        forLoop_StartAboveRow = cellIndex - boardHTMLSize - 1;
-        forLoop_StopAboveRow = forLoop_StartAboveRow + 1;
-        
-        forLoop_StartBelowRow = cellIndex + boardHTMLSize -1;
-        forLoop_StopBelowRow = forLoop_StartBelowRow + 1;
-
-        if (boardHTML[cellIndex - 1] === 'X') totNeighborsAlive++;  //L neigh only
-      }
-        
-      //Interior Case (all non-edge cells)
-      else {
-  
-        forLoop_StartAboveRow = cellIndex - boardHTMLSize - 1;
-        forLoop_StopAboveRow = forLoop_StartAboveRow + 2;
-        
-        forLoop_StartBelowRow = cellIndex + boardHTMLSize - 1;
-        forLoop_StopBelowRow = forLoop_StartBelowRow + 2;
-
-        if (boardHTML[cellIndex - 1] === 'X') totNeighborsAlive++;
-        if (boardHTML[cellIndex + 1] === 'X') totNeighborsAlive++;  //both neighs
-      }
-        
-      return this.makeTurn_countTotNeighbors(forLoop_StartAboveRow, forLoop_StopAboveRow, forLoop_StartBelowRow, forLoop_StopBelowRow, totNeighborsAlive);
-    },
-
-    //returns final number of neighs alive - is evaluated in makeTurn
-    makeTurn_countTotNeighbors: function (forLoop_StartAboveRow, forLoop_StopAboveRow, forLoop_StartBelowRow, forLoop_StopBelowRow, totNeighborsAlive) { 
-      //Now run for loops to count neighbors in above & below rows:
-      //sets range to row above 
-      for (let j = forLoop_StartAboveRow; j <= forLoop_StopAboveRow; j++) {
-      
-        if (boardHTML[j] === 'X') totNeighborsAlive++;
-      }
-  
-      //sets range to row below
-      for (let j = forLoop_StartBelowRow; j <= forLoop_StopBelowRow; j++) {
-      
-        if (boardHTML[j] === 'X') totNeighborsAlive++;
-      }
-  
-      return totNeighborsAlive;
-    },
-
-    //calls prev two makeTurn sub funcs
-    //then checks # of neighbor hits (X's) and evaluates each cell's next condition (live or die)
+    
+    //advances state of board to next turn/tick
     makeTurn: function () { 
+      //sets forLoop start & stop indices for counting neighbors in each row. Also counts number of neighbors on current row.
+      function setForLoopNeighborIndices(cellIndex) {
+
+        totNeighborsAlive = 0;
+        //Edge Test & Prep: Set for_loop variables & count same-row neighbors
+        //Left-Edge Case
+        if (cellIndex % boardHTMLSize === 0) {
+  
+          forLoop_StartAboveRow = cellIndex - boardHTMLSize;
+          forLoop_StopAboveRow = forLoop_StartAboveRow + 1;
+          forLoop_StartBelowRow = cellIndex + boardHTMLSize;
+          forLoop_StopBelowRow = forLoop_StartBelowRow + 1;
+          //Count in-row neighbors - Right neigh only
+          if (boardHTML[cellIndex + 1] === 'X') totNeighborsAlive++;
+        }
+        //Right-Edge Case
+        else if ((cellIndex + 1) % boardHTMLSize === 0) {
+    
+          forLoop_StartAboveRow = cellIndex - boardHTMLSize - 1;
+          forLoop_StopAboveRow = forLoop_StartAboveRow + 1;
+          forLoop_StartBelowRow = cellIndex + boardHTMLSize -1;
+          forLoop_StopBelowRow = forLoop_StartBelowRow + 1;
+          //Count in-row neighbors - Left neigh only
+          if (boardHTML[cellIndex - 1] === 'X') totNeighborsAlive++;
+        }
+        //Interior Case (all non-edge cells)
+        else {
+    
+          forLoop_StartAboveRow = cellIndex - boardHTMLSize - 1;
+          forLoop_StopAboveRow = forLoop_StartAboveRow + 2;
+          forLoop_StartBelowRow = cellIndex + boardHTMLSize - 1;
+          forLoop_StopBelowRow = forLoop_StartBelowRow + 2;
+          //Count in-row neighbors - both neighs
+          if (boardHTML[cellIndex - 1] === 'X') totNeighborsAlive++;
+          if (boardHTML[cellIndex + 1] === 'X') totNeighborsAlive++;
+        }
+          
+        return countTotNeighborsInRows();
+      }
+
+      function countTotNeighborsInRows() { 
+        //Now run for loops to count neighbors in above & below rows:
+        //sets range to row above 
+        for (let j = forLoop_StartAboveRow; j <= forLoop_StopAboveRow; j++) {
+
+          if (boardHTML[j] === 'X') totNeighborsAlive++;
+        }
+        //sets range to row below
+        for (let j = forLoop_StartBelowRow; j <= forLoop_StopBelowRow; j++) {
+        
+          if (boardHTML[j] === 'X') totNeighborsAlive++;
+        }
+    
+        return totNeighborsAlive;
+      }
+
+      let totNeighborsAlive,
+          forLoop_StartAboveRow, 
+          forLoop_StopAboveRow,
+          forLoop_StartBelowRow,
+          forLoop_StopBelowRow;
+
       //create new array for resulting board (will replace boardHTML at end):
       const boardResult_singleArray = new Array(boardHTML.length).fill("-");
 
@@ -197,7 +148,7 @@ NOTES:
       for (let i = 0; i < boardHTML.length; i++) {
       
         //returns num of neighbors alive (eventually)
-        const totNeighborsAlive = this.makeTurn_setForLoopNums(i);
+        const totNeighborsAlive = setForLoopNeighborIndices(i);
     
         //Evaluate neighbor count to determine if cell lives or die:
         //case: if alive already
@@ -216,30 +167,19 @@ NOTES:
       }
 
       //set internal board equal to resulting array/board 
-      //(have to create a temporary array lest copying over original before all cells are evaluated)
       boardHTML = boardResult_singleArray;
 
       }//end of makeTurn()
 
-    } //end of Cgol.prototype set-up      
+    } //end of CgolBoardInitializer.prototype set-up      
 
-    //Cgol.init - creates board. Square only for now. Default board size is 5.
-    Cgol.init = function(boardSize) {
-
-      boardHTMLSize = boardSize;
-
-      const board_singleArray = new Array(boardSize * boardSize);
-      board_singleArray.fill("-");
-  
-      //creates HTML representation of board using p element for each row in board
+    //sets up HTML board using p elements. Called from .init
+    function createHtmlBoardElements(boardSize) {
       let lineRepresentation = "";
       for (let i = 0; i < boardSize; i++) {
 
-        lineRepresentation += " -";    //would have to add html <pre> or something ... prob container wb best
+        lineRepresentation += " -";
       }
-
-      boardHTML = board_singleArray;
-      boardHTMLSize = Math.sqrt(boardHTML.length);
       //add HTML <p> board
       boardHTML_lineByLineRepresentation = new Array(boardSize);
       for (let i = 0; i < boardSize; i++) {
@@ -248,13 +188,23 @@ NOTES:
         boardHTML_lineByLineRepresentation[i].textContent = lineRepresentation;
         document.body.appendChild(boardHTML_lineByLineRepresentation[i]);
       }
-        
-      boardHTML = board_singleArray;
-      boardHTMLTotalLength = boardHTML.length;
-    }//end of Cgol.init
+    }
 
-    Cgol.init.prototype = Cgol.prototype;
-    global.Cgol = Cgol;
+    //creates board - Square only for now. Default board size is 5.
+    CgolBoardInitializer.init = function(boardSize) {
+
+      const board_singleArray = new Array(boardSize * boardSize);
+      board_singleArray.fill("-");
+
+      boardHTML = board_singleArray;
+      boardHTMLSize = boardSize;
+      boardHTMLTotalLength = boardHTML.length;
+
+      createHtmlBoardElements(boardSize);
+    }//end of CgolBoardInitializer.init
+
+    CgolBoardInitializer.init.prototype = CgolBoardInitializer.prototype;
+    global.CgolBoardInitializer = CgolBoardInitializer;
 
 }(window));
 
@@ -309,7 +259,7 @@ document.getElementById("rando-select").onclick = function() {
 
 
 //html testing 
-const board = Cgol(15);
+const board = CgolBoardInitializer(15);
 
 //make 5-cell vertical line
 board.makeMark(2);
