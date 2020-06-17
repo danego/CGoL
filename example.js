@@ -7,7 +7,7 @@
     return new CgolBoardInitializer.init(boardSize);
   }
 
-  let boardHTML_lineByLineRepresentation,  
+  let boardHtmlLineByLineRepresentation,  
     boardHTML,
     boardHTMLSize,          //is length of one side (ie square root of boardHTML array length - dependent on square board)
     boardHTMLTotalLength;   //total length of boardHTML single array
@@ -15,15 +15,15 @@
   CgolBoardInitializer.prototype = {
 
     //changes cell from dead to alive (for user to input starting positions or randomMark funcs)
-    makeMark: function(index_singleLine_X, index_Y) {
+    makeMark: function(indexForSingleLineX, indexForY) {
       //marks board based on snake chart/one-line numbers 
-      if(index_Y === undefined) boardHTML[index_singleLine_X] = "X";
+      if(indexForY === undefined) boardHTML[indexForSingleLineX] = "X";
   
       //XY passed in - marks board based on nested array coords (converts to snake/one-line)
       else {
   
-        //"mark = board_length * x coord + y coord"
-        let singleLineIndex = boardHTMLSize * index_singleLine_X + index_Y; 
+        //"mark = board length * x coord + y coord"
+        let singleLineIndex = boardHTMLSize * indexForSingleLineX + indexForY; 
         boardHTML[singleLineIndex] = "X";
       }
     },
@@ -57,7 +57,7 @@
       return boardHTMLTotalLength;
     },
 
-    //updates text content of <p> elements in boardHTML_lineByLineRepresentation
+    //updates text content of <p> elements in boardHtmlLineByLineRepresentation
     displayBoardHTML: function() {
 
       let singleArrayIndex = 0;
@@ -73,7 +73,7 @@
         }
 
         //actually changes HTML element's text
-        boardHTML_lineByLineRepresentation[i].textContent = htmlLineText;
+        boardHtmlLineByLineRepresentation[i].textContent = htmlLineText;
       }
     },
     
@@ -83,34 +83,34 @@
       function setForLoopNeighborIndices(cellIndex) {
 
         totNeighborsAlive = 0;
-        //Edge Test & Prep: Set for_loop variables & count same-row neighbors
+        //Edge Test & Prep: Set for loop variables & count same-row neighbors
         //Left-Edge Case
         if (cellIndex % boardHTMLSize === 0) {
   
-          forLoop_StartAboveRow = cellIndex - boardHTMLSize;
-          forLoop_StopAboveRow = forLoop_StartAboveRow + 1;
-          forLoop_StartBelowRow = cellIndex + boardHTMLSize;
-          forLoop_StopBelowRow = forLoop_StartBelowRow + 1;
+          forLoopStartAboveRow = cellIndex - boardHTMLSize;
+          forLoopStopAboveRow = forLoopStartAboveRow + 1;
+          forLoopStartBelowRow = cellIndex + boardHTMLSize;
+          forLoopStopBelowRow = forLoopStartBelowRow + 1;
           //Count in-row neighbors - Right neigh only
           if (boardHTML[cellIndex + 1] === 'X') totNeighborsAlive++;
         }
         //Right-Edge Case
         else if ((cellIndex + 1) % boardHTMLSize === 0) {
     
-          forLoop_StartAboveRow = cellIndex - boardHTMLSize - 1;
-          forLoop_StopAboveRow = forLoop_StartAboveRow + 1;
-          forLoop_StartBelowRow = cellIndex + boardHTMLSize -1;
-          forLoop_StopBelowRow = forLoop_StartBelowRow + 1;
+          forLoopStartAboveRow = cellIndex - boardHTMLSize - 1;
+          forLoopStopAboveRow = forLoopStartAboveRow + 1;
+          forLoopStartBelowRow = cellIndex + boardHTMLSize -1;
+          forLoopStopBelowRow = forLoopStartBelowRow + 1;
           //Count in-row neighbors - Left neigh only
           if (boardHTML[cellIndex - 1] === 'X') totNeighborsAlive++;
         }
         //Interior Case (all non-edge cells)
         else {
     
-          forLoop_StartAboveRow = cellIndex - boardHTMLSize - 1;
-          forLoop_StopAboveRow = forLoop_StartAboveRow + 2;
-          forLoop_StartBelowRow = cellIndex + boardHTMLSize - 1;
-          forLoop_StopBelowRow = forLoop_StartBelowRow + 2;
+          forLoopStartAboveRow = cellIndex - boardHTMLSize - 1;
+          forLoopStopAboveRow = forLoopStartAboveRow + 2;
+          forLoopStartBelowRow = cellIndex + boardHTMLSize - 1;
+          forLoopStopBelowRow = forLoopStartBelowRow + 2;
           //Count in-row neighbors - both neighs
           if (boardHTML[cellIndex - 1] === 'X') totNeighborsAlive++;
           if (boardHTML[cellIndex + 1] === 'X') totNeighborsAlive++;
@@ -122,12 +122,12 @@
       function countTotNeighborsInRows() { 
         //Now run for loops to count neighbors in above & below rows:
         //sets range to row above 
-        for (let j = forLoop_StartAboveRow; j <= forLoop_StopAboveRow; j++) {
+        for (let j = forLoopStartAboveRow; j <= forLoopStopAboveRow; j++) {
 
           if (boardHTML[j] === 'X') totNeighborsAlive++;
         }
         //sets range to row below
-        for (let j = forLoop_StartBelowRow; j <= forLoop_StopBelowRow; j++) {
+        for (let j = forLoopStartBelowRow; j <= forLoopStopBelowRow; j++) {
         
           if (boardHTML[j] === 'X') totNeighborsAlive++;
         }
@@ -136,13 +136,13 @@
       }
 
       let totNeighborsAlive,
-          forLoop_StartAboveRow, 
-          forLoop_StopAboveRow,
-          forLoop_StartBelowRow,
-          forLoop_StopBelowRow;
+          forLoopStartAboveRow, 
+          forLoopStopAboveRow,
+          forLoopStartBelowRow,
+          forLoopStopBelowRow;
 
       //create new array for resulting board (will replace boardHTML at end):
-      const boardResult_singleArray = new Array(boardHTML.length).fill("-");
+      const boardResultAsSingleArray = new Array(boardHTML.length).fill("-");
 
       //can't use forEach bc functions (and called funcs) use both index and element @ index
       for (let i = 0; i < boardHTML.length; i++) {
@@ -154,20 +154,20 @@
         //case: if alive already
         if (boardHTML[i] === 'X') {
         
-          if (totNeighborsAlive < 2 || totNeighborsAlive > 3) boardResult_singleArray[i] = "-";
-          else boardResult_singleArray[i] = "X";
+          if (totNeighborsAlive < 2 || totNeighborsAlive > 3) boardResultAsSingleArray[i] = "-";
+          else boardResultAsSingleArray[i] = "X";
         }
         
         //case: dead cell
         else {
             
-          if (totNeighborsAlive === 3) boardResult_singleArray[i] = "X";
-          else boardResult_singleArray[i] = "-";
+          if (totNeighborsAlive === 3) boardResultAsSingleArray[i] = "X";
+          else boardResultAsSingleArray[i] = "-";
           }
       }
 
       //set internal board equal to resulting array/board 
-      boardHTML = boardResult_singleArray;
+      boardHTML = boardResultAsSingleArray;
 
       }//end of makeTurn()
 
@@ -181,22 +181,22 @@
         lineRepresentation += " -";
       }
       //add HTML <p> board
-      boardHTML_lineByLineRepresentation = new Array(boardSize);
+      boardHtmlLineByLineRepresentation = new Array(boardSize);
       for (let i = 0; i < boardSize; i++) {
 
-        boardHTML_lineByLineRepresentation[i] = document.createElement('p');
-        boardHTML_lineByLineRepresentation[i].textContent = lineRepresentation;
-        document.body.appendChild(boardHTML_lineByLineRepresentation[i]);
+        boardHtmlLineByLineRepresentation[i] = document.createElement('p');
+        boardHtmlLineByLineRepresentation[i].textContent = lineRepresentation;
+        document.body.appendChild(boardHtmlLineByLineRepresentation[i]);
       }
     }
 
     //creates board - Square only for now. Default board size is 5.
     CgolBoardInitializer.init = function(boardSize) {
 
-      const board_singleArray = new Array(boardSize * boardSize);
-      board_singleArray.fill("-");
+      const boardAsSingleArray = new Array(boardSize * boardSize);
+      boardAsSingleArray.fill("-");
 
-      boardHTML = board_singleArray;
+      boardHTML = boardAsSingleArray;
       boardHTMLSize = boardSize;
       boardHTMLTotalLength = boardHTML.length;
 
@@ -210,7 +210,7 @@
 
 //************************ */
 
-//HTML event_handlers:
+//HTML event handlers:
 //when html button is pressed makeTurn func is called on boardHTML
 document.getElementById("makeTurn").onclick = function() {
   
@@ -255,7 +255,7 @@ document.getElementById("rando-select").onclick = function() {
 }
 */
 
-//end of html event_handlers setup 
+//end of html event handlers setup 
 
 
 //html testing 
