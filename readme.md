@@ -27,13 +27,6 @@ The purpose of this project is to create, from scratch, a simulator of Conway's 
     - **some methods, like clearBoard, makemark, should auto call displayBoard ... or wrap in button event handlers ... ?**
     - learning note: look into this.boardHTML in Cgol.init (was opening up that variable into the regular namespace)
 
-- html board view
-     - how to keep constant looking when X's pop up (how to insert html insturctions w/o it just printing as a string)
-
-- think about implementing HTML makeMark. Could redraw board immediatetly or on delay or w/ makeTurn
-    - maybe a button for each cell
-    - or, better, a grid.
-
 
 ***
 
@@ -47,9 +40,11 @@ The Cgol project is internally designed around a single array representation of 
 
 _Note:_ In this instance, the boardSize would be 3 (size of one side of the board) and the totalLength would be 9 (the length of the board as a single array).
 
-The library maintains only one board per initialized instance (see _How to Use_ section) to better serve HTML visuals. Currently there is no resizing method, but that is a future goal.
+* The library maintains only one board per initialized instance (see _How to Use_ section) to better serve HTML visuals. Currently there is no resizing method, but that is a future goal.
 
-I used JavaScript for all of the internal work and some HTML and CSS for the lackluster page visuals. Eventually I'd like to improve the webpage representation with better HTML and CSS and maybe even some Angular to add in single-page animations (?).
+* Once the board is initialized and the internal variables set, createHtmlBoardElements() is called to set up the HTML board. It adds the number of table rows(\<tr\>) and table data (\<td\>) appropriate to the selected boardSize, adds them to the _document_, and stores them internally for future calls in a nested array _boardHtmlTableRowsArray_. Each table cell element is also given an eventListener to process clicks to the specific cells (i.e., call makeMark() or clearMark()).
+
+* I used JavaScript for all of the internal work and some HTML and CSS for the lackluster page visuals. Eventually I'd like to improve the webpage representation with better HTML and CSS and maybe even some Angular to add in single-page animations (?).
 
 ***
 
@@ -78,6 +73,10 @@ In addition to the methods, there are some internal variables made available to 
 - **makeMarkRandom(markCount)**
 
   Creates markCount number of random marks on board. 
+
+- **clearMark(indexForSingleLineX, indexForY)**
+
+  Like makeMark(), it can take either a single number index or a double number index. Sets indexed cell to dead state regardless of current cell condition.
 
 - **clearBoard()**
 

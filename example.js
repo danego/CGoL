@@ -7,7 +7,7 @@
     return new CgolBoardInitializer.init(boardSize);
   }
 
-  let boardHtmlLineByLineRepresentation,  
+  let boardHtmlTableRowsArray,  
     boardHTML,
     boardHTMLSize,          //is length of one side (ie square root of boardHTML array length - dependent on square board)
     boardHTMLTotalLength;   //total length of boardHTML single array
@@ -39,6 +39,20 @@
       this.displayBoardHTML();
     },
 
+    //sets cell to dead (used when cell is clicked when already alive)
+    clearMark: function(indexForSingleLineX, indexForY) {
+      //marks board based on snake chart/one-line numbers 
+      if(indexForY === undefined) boardHTML[indexForSingleLineX] = "-";
+  
+      //XY passed in - marks board based on nested array coords (converts to snake/one-line)
+      else {
+
+        //"mark = board length * x coord + y coord"
+        let singleLineIndex = boardHTMLSize * indexForSingleLineX + indexForY; 
+        boardHTML[singleLineIndex] = "-";
+      }
+    },
+
     //set board back to all dead cells
     clearBoard: function() {
 
@@ -57,23 +71,26 @@
       return boardHTMLTotalLength;
     },
 
-    //updates text content of <p> elements in boardHtmlLineByLineRepresentation
+    //updates background-color attribute of table rows tds in boardHtmlTableRowsArray
+    //change single line array index to JS coords --> 
     displayBoardHTML: function() {
 
       let singleArrayIndex = 0;
-
-      //runs two for loops of board side size and keeps index of equivalent boardHTML (single array)
       for (let i = 0; i < boardHTMLSize; i++) {
-  
-        let htmlLineText = "";
+
         for (let j = 0; j < boardHTMLSize; j++) {
 
-          htmlLineText = htmlLineText + ' ' + boardHTML[singleArrayIndex];
+          //checks internal board & changes background color of td element to yellow/alive or white/dead
+          if (boardHTML[singleArrayIndex] === 'X') {
+
+            boardHtmlTableRowsArray[i][j].setAttribute("style", "background-color: yellow");
+            //boardHtmlTableRowsArray[i][j].textContent = 'X';
+          }
+          else {
+            boardHtmlTableRowsArray[i][j].setAttribute("style", "background-color: white");
+          }  
           singleArrayIndex++;
         }
-
-        //actually changes HTML element's text
-        boardHtmlLineByLineRepresentation[i].textContent = htmlLineText;
       }
     },
     
@@ -175,18 +192,33 @@
 
     //sets up HTML board using p elements. Called from .init
     function createHtmlBoardElements(boardSize) {
-      let lineRepresentation = "";
-      for (let i = 0; i < boardSize; i++) {
 
-        lineRepresentation += " -";
-      }
-      //add HTML <p> board
-      boardHtmlLineByLineRepresentation = new Array(boardSize);
-      for (let i = 0; i < boardSize; i++) {
+      //create Html table. Store table as a nested array (of tr elements of td elements)
+      boardHtmlTableRowsArray = new Array(boardSize);
+      const boardElement = document.getElementById("board");
 
-        boardHtmlLineByLineRepresentation[i] = document.createElement('p');
-        boardHtmlLineByLineRepresentation[i].textContent = lineRepresentation;
-        document.body.appendChild(boardHtmlLineByLineRepresentation[i]);
+      for (let i = 0; i < boardSize; i++) {
+        
+        boardHtmlTableRowsArray[i] = new Array(boardSize);
+        let newRow = document.createElement('tr')
+        boardElement.appendChild(newRow);
+
+        for (let j = 0; j < boardSize; j++) {
+          boardHtmlTableRowsArray[i][j] = document.createElement('td');
+          newRow.appendChild(boardHtmlTableRowsArray[i][j]);
+
+          //add an event listener to each td element 
+          boardHtmlTableRowsArray[i][j].addEventListener('click', event => {
+            //"mark = board length * x coord + y coord"
+            const singleLineIndex = boardSize * i + j; 
+            //clears mark if one already present
+            if (boardHTML[singleLineIndex] === 'X') this.clearMark(singleLineIndex);
+            //adds mark if cell was dead
+            else this.makeMark(singleLineIndex);
+
+            this.displayBoardHTML();
+          })
+        }
       }
     }
 
@@ -200,7 +232,7 @@
       boardHTMLSize = boardSize;
       boardHTMLTotalLength = boardHTML.length;
 
-      createHtmlBoardElements(boardSize);
+      createHtmlBoardElements.call(this, boardSize);
     }//end of CgolBoardInitializer.init
 
     CgolBoardInitializer.init.prototype = CgolBoardInitializer.prototype;
