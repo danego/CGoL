@@ -20,7 +20,14 @@ The purpose of this project is to create, from scratch, a simulator of Conway's 
 
 
 ## Notes - for myself ##
-- optimize makeTurn - consolidate same neighbors and pass as argument (set in for Loops).
+- remove seagull
+
+- separate countNeighbors() func from makeTurn()
+  - optimize next ... pass in shared neighbors, if any (savings from evaluating edge cases)
+
+- for readme, add in a separate section for internal functions and user-available methods
+
+- (for later) look at internal functions & try to make less reliant on single array structure
 
 - all board functionality in mini-framework comments:
     - then set up html/DOM code accessing the boardHTML thru those channels/methods (make button events easier)
@@ -107,3 +114,5 @@ In addition to the methods, there are some internal variables made available to 
 ***
 
 ## Credits ##
+
+1. The current _makeRandomMarkAutoTurns_ timing feature was provided by Sirrele. 

@@ -6,7 +6,7 @@
     <script src="example.js" defer></script>
 
     <style>
-      
+
       .center {
         text-align: center;
       }
@@ -19,8 +19,24 @@
         background-color: pink;
       }
 
+      #buttons {
+        width: 500px;
+        align-self: center;
+        padding: 1.25em;
+      }
+
+      div {
+        margin-top: 7px;
+      }
+
+      section > div {
+        background-color: #777;
+      }
+
       table {
         border: 2px solid black;
+        /* not convinced this looks better on medium to small boards ... */
+        border-collapse: collapse;
         display: inline-block;
       }
 
@@ -38,21 +54,32 @@
     <p class="note"><em>Note: The HTML board now handles making marks and turns, but does not yet support changing board size.</em></p>
     <p class="note"></p>To set <em>specific</em> board size, please do so via the javascript file.</p>
 
-    <section class="center">
-      <div>
+    <section id="buttons" class="center">
         <input id="makeTurn" type="button" value="makeTurn">
-        <input id="makeRandomMark" type="button" value="Go Random" class="random">
-        <input id="makeRandomMarkAutoTurns" type="button" value="Go Random + Timer" class="random">
-      
-        <label for="rando-select">&nbsp Choose how random:</label>
-        <select name="randoNum" id="rando-select" class="random">
-          <option value="1">1</option>
-          <option selected value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-        </select>
-      </div>
+        <div>
+          <label for="autoTurnTimerOn">Timer:</label>
+          <input type="button" id="autoTurnTimerOn" value="On">
+          <label for="autoTurnTimerOff">/</label>
+          <input type="button" id="autoTurnTimerOff" value="Off">
+        </div>
+
+        <div>
+          <input id="makeRandomMark" type="button" value="Go Random" class="random">
+          <label for="randoDensity">&nbsp Choose how random:</label>
+          <input type="number" id="randoDensity" name="randoDensity" value="5" max="10" min="1">
+        </div>
+
+        <div>
+          <label for="board-size-select">&nbsp Choose board size:</label>
+          <select name="boardSizeNum" id="board-size-select" class="random">
+            <option value=2>2</option>
+            <option value=3>3</option>
+            <option value=4>4</option>
+            <option value=5>5</option>
+            <option value=10>10</option>
+            <option value=15 selected>15</option>
+          </select>
+        </div>
     </section>
 
     <!-- Board will go here, created through JS-->
